@@ -249,6 +249,11 @@ func authorizeRuleChanges(change *changes, evaluator func(evaluator ac.Evaluator
 		if !allowed {
 			return fmt.Errorf("%w to delete alert rules that belong to folder %s", ErrAuthorization, change.GroupKey.NamespaceUID)
 		}
+		for _, rule := range change.Delete {
+			if !authorizeDatasourceAccessForRule(rule, evaluator) {
+				return fmt.Errorf("%w to delete an alert rule '%s' because the user does not have read permissions for one or many datasources the rule uses", ErrAuthorization, rule.UID)
+			}
+		}
 	}
 
 	var addAuthorized, updateAuthorized bool
